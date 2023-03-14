@@ -1,0 +1,72 @@
+import datetime
+import ijson
+import json5 as json
+import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import pandas as pd
+import openpyxl
+import pathlib
+import openpyxl as xl
+from openpyxl import Workbook
+from openpyxl import load_workbook
+from dateutil.parser import parse
+from psycopg2 import sql
+import numpy
+from psycopg2 import extensions
+
+#подключение к базе
+import psycopg2
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+from psycopg2 import Error
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+conn = psycopg2.connect(dbname='postgres', user='alekseivaganov',
+                        password='', host='localhost')
+conn.set_client_encoding('UTF8')
+
+cursor = conn.cursor()
+i = 0
+
+#Парсинг
+with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+         Clos = ijson.kvitems(ASUNS,'__DATA.features.item.properties')
+ sqlColumns = 'INSERT INTO ClosureMPS ('
+         sqlValues = 'VALUES ('
+         #замена json кусков
+
+         for k,v in Clos:
+             if (k == 'waypoints' or
+                k == 'geometry'    or
+                k == 'name'
+                        ):
+
+                    continue
+             elif (
+                k == 'event_work_type'      or
+                k == 'event_type'           or
+                k == 'currentness_type'     or
+                k == 'okrug'                or
+                k == 'event_type_id'        or
+                k == 'event_state'
+                ):
+                    cringejson = str(v)
+                    cringejs = ''
+                    cringejs = cringejson.replace("'", '"')
+                    Val = "'" + cringejs.replace('"', '\"') + "'"
+                    #Val = '"' +  cringejson.replace('"', '\"') + '"'
+                    sqlValues = sqlValues  +Val+ ","
+                    sqlColumns = sqlColumns + str(k) + ','
+             elif k =='time_status':
+                 sqlValues = sqlValues + "'" + str(v) + "'" +")"
+                 sqlColumns = sqlColumns + str(k) + ")"
+                 print(sqlColumns + ' ' + sqlValues)
+                 #cursor.execute(sqlColumns + ' ' + sqlValues)
+                 #conn.commit()
+                 sqlColumns = 'INSERT INTO ClosureMPS2 ('
+                 sqlValues = 'VALUES ('
+             else:
+                 sqlValues = sqlValues + "'" + str(v) + "'" + ','
+                 sqlColumns = sqlColumns + str(k) + ','
+
+             i = i + 1
+             #print(k + ':' + str(v))
