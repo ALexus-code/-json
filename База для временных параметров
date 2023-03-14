@@ -1,0 +1,1 @@
+CREATE TABLE ClosureMPSCoord(Closure_id uuid REFERENCES ClosureMPS(id),id uuid not null unique DEFAULT uuid_generate_v1() PRIMARY KEY, typePoint varchar(50),Lat varchar(50),Lon varchar(50))
