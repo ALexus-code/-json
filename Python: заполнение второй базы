@@ -1,0 +1,172 @@
+import datetime
+import ijson
+import json5 as json
+import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import pandas as pd
+import openpyxl
+import pathlib
+import openpyxl as xl
+from openpyxl import Workbook
+from openpyxl import load_workbook
+from dateutil.parser import parse
+from psycopg2 import sql
+import numpy
+import re
+import uuid
+import json
+from psycopg2 import extensions
+
+#подключение к базе
+import psycopg2
+psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+from psycopg2 import Error
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+
+conn = psycopg2.connect(dbname='postgres', user='alekseivaganov',
+                        password='', host='localhost')
+conn.set_client_encoding('UTF8')
+
+cursor = conn.cursor()
+i = 0
+
+#вместе waypoints
+sqlColumns = 'INSERT INTO closurempscoord (id, lat, lon, closure_id, typepoint)'
+#sqlValues = 'VALUES ('
+#id =''
+#with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+    #Clos = ijson.kvitems(ASUNS, '__DATA.features.item.properties')
+    #for k, v in Clos:
+        #if (k == 'id'):
+            #id = str(v)
+        #if (k == 'waypoints'):
+            #sqlValues = sqlValues + id + "'" + ','
+            #list = sqlValues
+            #sqlValues = 'VALUES (' + "'" + list[-38:]
+            #coord = str(v)
+            #lat = ''
+            #lon = ''
+            #m = re.search('37.(.+?),', coord)
+            #if m:
+                #lat1 = m.group(1)
+                #lat = lat1.replace("')]", "").replace("')", "").replace("'", "")
+                #sqlValues = sqlValues + "'" + str(uuid.uuid4()) + "'" + ',' + "'"+ ('37.' + lat) + "'" + ','
+            #else:
+                #sqlValues = sqlValues + "'" + str(uuid.uuid4()) + "'" + ',' + "'" + 'BITOE_GOVNO' + "'" + ','
+            #n = re.search('55.(.+?),', coord)
+
+            #if n:
+                #lon1 = n.group(1)
+                #lon = lon1.replace("')]", "").replace("')", "").replace(")", "")
+                #sqlValues = sqlValues + "'" + '55.' + lon + "'" + ',' + "'" + str(uuid.uuid4()) + "'" + ',' + "'" + 'waypoints' + "'" + ')'
+                #print(sqlValues)
+                #cursor.execute(sqlColumns + ' ' + sqlValues)
+                #conn.commit()
+            #else:
+                #sqlValues = sqlValues + 'BITOE_GOVNO' + "'" + ','
+            #sqlValues = 'VALUES ('
+#print(sqlColumns)
+
+#вместе геометри
+sqlValues = ''
+with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+    Clos = ijson.kvitems(ASUNS, '__DATA.features.item')
+    for k, v in Clos:
+        print(k)
+        if (k == 'properties'):
+            id = str(v)
+            id = id[:45]
+            id = id[7:]
+            #print(id)
+        if (k == 'geometry'):
+            sqlValues = sqlValues + id + ','
+            list = sqlValues
+            sqlValues = 'VALUES (' + "'" + list[-38:]
+            coord = str(v)
+            lat = ''
+            lon = ''
+            m = re.search('37.(.+?),', coord)
+            if m:
+                lat1 = m.group(1)
+                lat = lat1.replace("')]", "").replace("')", "")
+                sqlValues = sqlValues + "'" + ('37.' + lat) + "'" + ','
+            else:
+                sqlValues = sqlValues + "'" + 'BITOE_GOVNO'+ "'" + ','
+            n = re.search('55.(.+?),', coord)
+            if n:
+                lon1 = n.group(1)
+                lon = lon1.replace("')]", "").replace("')", "").replace(")", "")
+                sqlValues = sqlValues + "'" + '55.' + lon + "'" + ',' + "'" + str(uuid.uuid4()) + "'" + ',' + "'" + 'geometry' + "'" + ')'
+                #print(sqlValues)
+                cursor.execute(sqlColumns + ' ' + sqlValues)
+                conn.commit()
+                sqlValues = 'VALUES ('
+#Разделение широт и долгот))
+#with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+    #Clos3 = ijson.kvitems(ASUNS, '__DATA.features.item.properties.waypoints')
+    #way = (v for k, v in Clos3 if k == 'waypoints')
+    #for k, v  in Clos3:
+        #lat = ''
+        #lon = ''
+        #coord= str(v)
+       # m = re.search('37.(.+?),', coord)
+       # if m:
+           # lat1 = m.group(1)
+           # lat = lat1.replace("')]", "").replace("')", "")
+            #print('37.' + lat)
+       # n = re.search('55.(.+?),', coord)
+       # if n:
+            #lon1 = n.group(1)
+            #lon = lon1.replace("')]", "").replace("')", "")
+            #print('55.' + lon)
+
+        #print(coord)
+        #res = re.findall(r'\d+', coord)
+        #res = re.findall(r'\(.*?\)', coord)
+        #print(res)
+        #sqlValues = sqlValues + "'" + str(res) + "'" + ','
+        #print(sqlValues + ')' )
+        #sqlValues = 'VALUES ('
+
+#print(myTab)
+#id
+#print(uuid.uuid4())
+
+#Closureid
+#with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+#    Clos = ijson.kvitems(ASUNS, '__DATA.features.item.properties')
+#    sqlColumns = 'INSERT INTO ClosureMPS ('
+#    sqlValues = 'VALUES ('
+#    for k, v in Clos:
+#        if (k == 'id'):
+#            print(v)
+
+#Typepoint
+
+#with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+    #Clos = ijson.kvitems(ASUNS, '__DATA.features.item')
+    #for k, v in Clos:
+         #if (k == 'geometry'):
+             #print('geometry')
+         #else:
+             #print('waypoints')
+
+#Coordinates
+#in_waypoint
+#with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+#    Clos = ijson.kvitems(ASUNS, '__DATA.features.item.properties.waypoints')
+#    sqlColumns = 'INSERT INTO ClosureMPS ('
+#    sqlValues = 'VALUES ('
+#    for k, v in Clos:
+        #print(v)
+#        coord = str(v)
+#        res = re.findall(r'\(.*?\)', coord)
+#        print(res)
+#in_geometry
+#with open("/Users/alekseivaganov/Downloads/roadclosuresMPS.json", 'r') as ASUNS:
+    #Clos = ijson.kvitems(ASUNS, '__DATA.features.item.geometry')
+    #for k, v in Clos:
+         #coord = str(v)
+         #res = re.findall(r'\(.*?\)', coord)
+         #print(res)
